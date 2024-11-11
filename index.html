@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image URL Sorter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+      }
+      #image-container img {
+        max-width: 80%;
+        max-height: 400px;
+        margin: 10px 0;
+      }
+      button {
+        margin: 5px;
+        padding: 10px 15px;
+      }
+      input[type="text"],
+      textarea {
+        width: 60%;
+        padding: 10px;
+        margin: 10px 0;
+      }
+      .output {
+        margin-top: 20px;
+        text-align: left;
+      }
+      #image-counter {
+        margin: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Image URL Sorter</h1>
+    <p>Paste image URLs below (one per line) and click "Load Images".</p>
+    <textarea id="url-input" rows="5"></textarea><br />
+    <button onclick="loadImages()">Load Images</button>
+
+    <div id="image-container"></div>
+    <div id="image-counter"></div>
+
+    <div id="navigation-buttons">
+      <button onclick="previousImage()">Previous</button>
+      <button onclick="nextImage()">Next</button>
+    </div>
+
+    <div id="category-buttons">
+      <button id="cat1" onclick="categorizeImage('Category 1')">
+        Category 1
+      </button>
+      <button id="cat2" onclick="categorizeImage('Category 2')">
+        Category 2
+      </button>
+      <button id="cat3" onclick="categorizeImage('Category 3')">
+        Category 3
+      </button>
+    </div>
+
+    <div class="output">
+      <h3>Sorted URLs:</h3>
+      <div id="output"></div>
+    </div>
+
+    <script>
+      const categories = ["Category 1", "Category 2", "Category 3"];
+      let urls = [];
+      let sortedUrls = { "Category 1": [], "Category 2": [], "Category 3": [] };
+      let currentIndex = 0;
+
+      function loadImages() {
+        const input = document.getElementById("url-input").value;
+        urls = input
+          .split("\n")
+          .map((url) => url.trim())
+          .filter((url) => url !== "");
+        if (urls.length === 0) {
+          alert("Please enter valid URLs.");
+          return;
+        }
+        currentIndex = 0;
+        displayImage();
+      }
+
+      function displayImage() {
+        const container = document.getElementById("image-container");
+        const counter = document.getElementById("image-counter");
+
+        if (
+          urls.length === 0 ||
+          currentIndex < 0 ||
+          currentIndex >= urls.length
+        ) {
+          container.innerHTML = "<p>No image to display.</p>";
+          counter.innerHTML = "";
+          return;
+        }
+
+        container.innerHTML = `<img src="${urls[currentIndex]}" alt="Image not found">`;
+        counter.innerHTML = `${currentIndex + 1} / ${urls.length}`;
+      }
+
+      function categorizeImage(category) {
+        const currentUrl = urls[currentIndex];
+
+        // Ensure the URL is removed from all other categories
+        for (const cat of categories) {
+          sortedUrls[cat] = sortedUrls[cat].filter((url) => url !== currentUrl);
+        }
+
+        // Add the URL to the new category
+        sortedUrls[category].push(currentUrl);
+
+        // Display results and move to the next image
+        displayOutput();
+        if (currentIndex === urls.length - 1) {
+          alert("This is the last image.");
+        } else {
+          nextImage();
+        }
+      }
+
+      function previousImage() {
+        if (currentIndex > 0) {
+          currentIndex--;
+          displayImage();
+        } else {
+          alert("This is the first image.");
+        }
+      }
+
+      function nextImage() {
+        if (currentIndex < urls.length - 1) {
+          currentIndex++;
+          displayImage();
+        }
+      }
+
+      function displayOutput() {
+        const output = document.getElementById("output");
+        output.innerHTML = "";
+
+        for (const category of categories) {
+          output.innerHTML += `<h4>${category}:</h4><ul>${
+            sortedUrls[category]
+              .map((url, index) => `<li>${index + 1}: ${url}</li>`)
+              .join("") || "<li>(empty)</li>"
+          }</ul>`;
+        }
+      }
+
+      // Initialize empty categories in output
+      displayOutput();
+
+      // Keyboard shortcut event listener
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "1") {
+          categorizeImage("Category 1");
+        } else if (event.key === "2") {
+          categorizeImage("Category 2");
+        } else if (event.key === "3") {
+          categorizeImage("Category 3");
+        }
+      });
+    </script>
+  </body>
+</html>
+
